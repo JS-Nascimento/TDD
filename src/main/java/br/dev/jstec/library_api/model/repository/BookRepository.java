@@ -7,5 +7,5 @@ import br.dev.jstec.library_api.api.model.entity.Book;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book , Integer>{
-
+		boolean existsByIsbn(String isbn);
 }

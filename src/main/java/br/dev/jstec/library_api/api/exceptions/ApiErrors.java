@@ -1,6 +1,7 @@
 package br.dev.jstec.library_api.api.exceptions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.validation.BindingResult;
@@ -18,6 +19,12 @@ public class ApiErrors {
 	}
 
 	
+
+	public ApiErrors(BusinessException ex) {
+		this.errors = Arrays.asList(ex.getMessage());
+	}
+
+
 
 	public List<String> getErrors() {
 		return errors;

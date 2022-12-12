@@ -1,7 +1,5 @@
 package br.dev.jstec.library_api.api.resource;
 
-
-
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.dev.jstec.library_api.api.DTO.BookDTO;
+import br.dev.jstec.library_api.api.exceptions.BusinessException;
 import br.dev.jstec.library_api.api.model.entity.Book;
 import br.dev.jstec.library_api.api.service.BookService;
 
@@ -32,70 +31,75 @@ import br.dev.jstec.library_api.api.service.BookService;
 @WebMvcTest
 @AutoConfigureMockMvc
 public class BookControllerTest {
-	
+
 	static String BOOK_API = "/api/books";
 
 	@Autowired
 	MockMvc mvc;
-	
+
 	@MockBean
 	BookService service;
-	
+
 	@Test
 	@DisplayName("Deve Criar um Livro com Sucesso")
 	public void createBookTest() throws Exception {
-		
-		BookDTO dto = BookDTO.builder()
-								.author("Artur")
-								.title("As aventuras")
-								.isbn("001")
-								.build();
-		Book savedBook = Book.builder()
-				.id(101)
-				.author("Artur")
-				.title("As aventuras")
-				.isbn("001")
-				.build();
-		
+
+		BookDTO dto = createNewBook();
+		Book savedBook = Book.builder().id(101).author("Artur").title("As aventuras").isbn("001").build();
+
 		BDDMockito.given(service.save(Mockito.any(Book.class))).willReturn(savedBook);
-		
+
 		String json = new ObjectMapper().writeValueAsString(dto);
-		
-		MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-			.post(BOOK_API)
-			.contentType(MediaType.APPLICATION_JSON)
-			.accept(MediaType.APPLICATION_JSON)
-			.content(json);
-		
-		mvc
-			.perform(request)
-			.andExpect(status().isCreated())
-			.andExpect(jsonPath("id").value(101))
-			.andExpect(jsonPath("title").value(dto.getTitle()))
-			.andExpect(jsonPath("author").value(dto.getAuthor()))
-			.andExpect(jsonPath("isbn").value(dto.getIsbn()))
-			
+
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(BOOK_API)
+				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(json);
+
+		mvc.perform(request).andExpect(status().isCreated()).andExpect(jsonPath("id").value(101))
+				.andExpect(jsonPath("title").value(dto.getTitle())).andExpect(jsonPath("author").value(dto.getAuthor()))
+				.andExpect(jsonPath("isbn").value(dto.getIsbn()))
+
 		;
-		
+
 	}
+
+
 	@Test
 	@DisplayName("Deve lançar erro de validação quando não houver dados suficientes")
 	public void createIvalidBookTest() throws Exception {
-		
+
 		String json = new ObjectMapper().writeValueAsString(new BookDTO());
+
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(BOOK_API)
+				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(json);
+
+		mvc.perform(request).andExpect(status().isBadRequest()).andExpect(jsonPath("errors", Matchers.hasSize(3)));
+
+		;
+	}
+
+	@Test
+	@DisplayName("Deve lançar erro de validação quando cadastrar ISBN repetido")
+	public void createBookWithISBNDuplicated() throws Exception {
+
+		BookDTO dto = createNewBook();
+		String json = new ObjectMapper().writeValueAsString(dto);
+		String errorMessage = "Isbn Já cadastrado";
 		
+		BDDMockito.given(service.save(Mockito.any(Book.class))).willThrow(new BusinessException(errorMessage));
+
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-				.post(BOOK_API)
-				.contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON)
-				.content(json);
-		
+																	.post(BOOK_API)
+																	.contentType(MediaType.APPLICATION_JSON)
+																	.accept(MediaType.APPLICATION_JSON)
+																	.content(json);
 		mvc
-		.perform(request)
-		.andExpect( status().isBadRequest() )
-		.andExpect( jsonPath("errors", Matchers.hasSize(3)));
-	
-		
-	;
+			.perform(request)
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("errors", Matchers.hasSize(1)))
+			.andExpect(jsonPath("errors[0]").value(errorMessage));
+	}
+
+	private BookDTO createNewBook() {
+		return BookDTO.builder().author("Artur").title("As aventuras").isbn("001").build();
 	}
 }
