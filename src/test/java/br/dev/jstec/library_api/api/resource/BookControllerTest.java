@@ -76,7 +76,7 @@ public class BookControllerTest {
 
 		mvc.perform(request).andExpect(status().isBadRequest()).andExpect(jsonPath("errors", Matchers.hasSize(3)));
 
-		;
+
 	}
 
 	@Test
