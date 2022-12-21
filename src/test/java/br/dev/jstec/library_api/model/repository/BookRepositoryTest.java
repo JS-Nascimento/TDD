@@ -2,6 +2,8 @@ package br.dev.jstec.library_api.model.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,5 +48,17 @@ public class BookRepositoryTest {
 		boolean exists = repository.existsByIsbn(isbn);
 		
 		assertThat(exists).isFalse();
+	}
+	
+	@Test
+	@DisplayName("Must return a Book per ID")
+	public void findByIdTest() {
+		String isbn = "123";
+		Book book = Book.builder().title("As aventuras").author("fulano").isbn(isbn).build();			
+		entityManager.persist(book);
+		
+		Optional<Book> foundBook = repository.findById(book.getId());
+		
+		assertThat(foundBook.isPresent()).isTrue();
 	}
 }
