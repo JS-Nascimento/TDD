@@ -4,6 +4,9 @@ package br.dev.jstec.library_api.api.resource;
 import javax.validation.Valid;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -24,6 +27,9 @@ import br.dev.jstec.library_api.api.exceptions.ApiErrors;
 import br.dev.jstec.library_api.api.exceptions.BusinessException;
 import br.dev.jstec.library_api.api.model.entity.Book;
 import br.dev.jstec.library_api.api.service.BookService;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/books")
@@ -57,6 +63,22 @@ public class BookController {
 		
 			
 	}
+	@GetMapping()
+	public Page<BookDTO> find(BookDTO dto, Pageable pageRequest) {
+
+		Book filter = modelMapper.map(dto, Book.class);
+		Page<Book> result = service.find(filter, pageRequest);
+		List<BookDTO> list = result.getContent()
+				.stream()
+				.map(entity -> modelMapper.map(entity, BookDTO.class))
+				.collect(Collectors.toList());
+
+		return new PageImpl<BookDTO>(list, pageRequest, result.getTotalElements() );
+
+
+
+
+	}
 	
 	@DeleteMapping("{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -66,6 +88,8 @@ public class BookController {
 		service.delete(book);
 		
 	}
+
+
 	
 	@PutMapping("{id}")
 	@ResponseStatus(HttpStatus.OK)
