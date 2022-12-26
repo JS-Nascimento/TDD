@@ -48,7 +48,7 @@ public class BookControllerTest {
 	BookService service;
 
 	@Test
-	@DisplayName("Deve Criar um Livro com Sucesso")
+	@DisplayName("Must create a new book with success")
 	public void createBookTest() throws Exception {
 
 		BookDTO dto = createNewBook();
@@ -70,7 +70,7 @@ public class BookControllerTest {
 	}
 
 	@Test
-	@DisplayName("Deve lançar erro de validação quando não houver dados suficientes")
+	@DisplayName("Must throw exception when information has error")
 	public void createInvalidBookTest() throws Exception {
 
 		String json = new ObjectMapper().writeValueAsString(new BookDTO());
@@ -84,7 +84,7 @@ public class BookControllerTest {
 	}
 
 	@Test
-	@DisplayName("Deve lançar erro de validação quando cadastrar ISBN repetido")
+	@DisplayName("Must throw exception when trying to create duplicate isbn")
 	public void createBookWithISBNDuplicated() throws Exception {
 
 		BookDTO dto = createNewBook();
@@ -130,7 +130,7 @@ public class BookControllerTest {
 	}
 	
 	@Test
-	@DisplayName("should return resource not found when a searched book does not exist")
+	@DisplayName("Must return resource not found when a searched book does not exist")
 	public void bookNotFoundTest() throws Exception{
 		
 		BDDMockito.given(service.getById(Mockito.anyInt())).willReturn(Optional.empty());
